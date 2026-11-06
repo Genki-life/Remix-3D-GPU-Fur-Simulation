@@ -100,7 +100,7 @@ function smoothstep(edge0, edge1, x) {
 
 /**
  * Sculpt a unit sphere vertex into our cute "Mochi-Puff" blob creature with
- * chubby pear cheeks, perky ears, stubby side arms, and recessed eye sockets.
+ * chubby pear cheeks, stubby side arms, and recessed eye sockets.
  */
 function sculptBlobPosition(u, v, w) {
   let x = u;
@@ -120,15 +120,20 @@ function sculptBlobPosition(u, v, w) {
     y = -0.55 - Math.tanh(t * 1.15) * 0.32;
   }
 
-  // 2. Perky sculptural ears on top-left and top-right
-  const leftEarDir = normalize3(-0.46, 0.86, 0.06);
-  const rightEarDir = normalize3(0.46, 0.86, 0.06);
-  const dotLEar = Math.max(0.0, u * leftEarDir[0] + v * leftEarDir[1] + w * leftEarDir[2]);
-  const dotREar = Math.max(0.0, u * rightEarDir[0] + v * rightEarDir[1] + w * rightEarDir[2]);
-  const earProfile = Math.pow(Math.max(dotLEar, dotREar), 14.0) * 0.44;
-  x += u * earProfile * 0.75;
-  y += v * earProfile * 1.15;
-  z += w * earProfile * 0.55;
+  // 2. Central sculptural horn on top of the head (covered by the same fur system)
+  const hornDir = normalize3(0.0, 0.96, 0.26);
+  const dotHorn = Math.max(0.0, u * hornDir[0] + v * hornDir[1] + w * hornDir[2]);
+  if (dotHorn > 0.75) {
+    const hornFactor = Math.pow(dotHorn, 16.0);
+    const hornLen = hornFactor * 0.52;
+    const taper = hornFactor * 0.42;
+    const rx = u - dotHorn * hornDir[0];
+    const ry = v - dotHorn * hornDir[1];
+    const rz = w - dotHorn * hornDir[2];
+    x += hornDir[0] * hornLen - rx * taper;
+    y += hornDir[1] * hornLen - ry * taper;
+    z += hornDir[2] * hornLen - rz * taper;
+  }
 
   // 3. Cute stubby side nubbins (little arms)
   const leftArmDir = normalize3(-0.94, -0.08, 0.28);
